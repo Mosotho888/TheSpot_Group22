@@ -15,6 +15,7 @@ namespace GROUP22
         SqlConnection conn;
         SqlCommand comm;
         SqlDataAdapter adapt;
+        DataSet ds;
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -48,7 +49,8 @@ namespace GROUP22
             {
                 if (employeeCookie != null)
                 {
-
+                    lblEmployeeEmail.Text = employeeCookie["employeeEmail"];
+                    lblGrand.Visible = false;
 
                 }
                 else
@@ -62,6 +64,97 @@ namespace GROUP22
         protected void gdRowDeleting(object sender, GridViewDeleteEventArgs e)
         {
 
+        }
+
+        public void ascendingOrder()
+        {
+            string sql = "SELECT orderId, productId, customerId, productName, productPrice, productQuantity, totalPrice, dateOfOrder FROM TableReports ORDER BY totalPrice ASC";
+
+            comm = new SqlCommand(sql, conn);
+            adapt.SelectCommand = comm;
+            adapt.Fill(ds);
+
+            gvReport.DataSource = ds;
+            gvReport.DataBind();
+
+            grandtot();
+        }
+
+        public void descendingOrder()
+        {
+            string sql = "SELECT orderId, productId, customerId, productName, productPrice, productQuantity, totalPrice, dateOfOrder FROM TableReports ORDER BY totalPrice DESC";
+
+            comm = new SqlCommand(sql, conn);
+            adapt.SelectCommand = comm;
+            adapt.Fill(ds);
+
+            gvReport.DataSource = ds;
+            gvReport.DataBind();
+
+            grandtot();
+
+        }
+
+        public void defaultOrder()
+        {
+            string sql = "SELECT orderId, productId, customerId, productName, productPrice, productQuantity, totalPrice, dateOfOrder FROM TableReports";
+
+            comm = new SqlCommand(sql, conn);
+            adapt.SelectCommand = comm;
+            adapt.Fill(ds);
+
+            gvReport.DataSource = ds;
+            gvReport.DataBind();
+
+            grandtot();
+        }
+
+        public void grandtot()
+        {
+
+            string sql = "SELECT SUM(totalPrice) FROM TableReports";
+            comm = new SqlCommand(sql, conn);
+            string amount = comm.ExecuteScalar().ToString();
+
+            lblTotalAmount.Text = amount;
+
+        }
+
+        public void search()
+        {
+            lblInfo.Text = "All the infomation of orders received for a particular customer";
+            conn = new SqlConnection(conStr);
+            try
+            {
+                conn.Open();
+                adapt = new SqlDataAdapter();
+                ds = new DataSet();
+
+                string sql = "SELECT * FROM TableReports WHERE customerId LIKE '%" + txtSearch.Text + "%'";
+                comm = new SqlCommand(sql, conn);
+                adapt.SelectCommand = comm;
+                adapt.Fill(ds);
+
+                gvReport.DataSource = ds;
+                gvReport.DataBind();
+
+                sumSearch();
+
+            }
+            catch (Exception error)
+            {
+                lblError.Text = error.Message;
+
+            }
+        }
+
+        public void sumSearch()
+        {
+            string sq2 = "SELECT SUM(totalPrice) FROM TableReports WHERE customerId = '" + txtSearch.Text + "'";
+            comm = new SqlCommand(sq2, conn);
+            string amount = comm.ExecuteScalar().ToString();
+
+            lblTotalAmount.Text = amount;
         }
     }
 }
